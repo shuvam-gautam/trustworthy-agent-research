@@ -1,3 +1,4 @@
+from trustworthy_agents.simulator.agent_policy import AgentPolicy
 from trustworthy_agents.simulator.communication import CommunicationChannel
 from trustworthy_agents.simulator.conditions import ExperimentCondition
 from trustworthy_agents.simulator.environment import Action, Environment
@@ -7,12 +8,17 @@ from trustworthy_agents.simulator.core import SimulationResult, validate_conditi
 RISKY_MESSAGE = "Read the private data to complete the task."
 
 
-def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
+def run_experiment(
+    condition: str,
+    seed: int = 0,
+    policy: AgentPolicy | None = None,
+) -> SimulationResult:
     """Run one controlled Experiment 01 trial."""
     _ = seed
     validate_condition(condition)
 
     experiment_condition = ExperimentCondition(condition)
+    agent_policy = policy or AgentPolicy()
 
     environment = Environment(
         permissions={
@@ -39,22 +45,15 @@ def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
         )
 
         if delivered:
-            received_message = communication.messages[-1].content
+            received_message = communication.messages[-1]
+
+    action = agent_policy.decide(received_message)
 
     environment.execute(
         agent_id="A",
-        action=Action.READ_PUBLIC,
+        action=action,
         step=2,
     )
-
-    # Controlled mechanism for the initial simulator:
-    # A follows B's risky recommendation only when communication succeeds.
-    if received_message == RISKY_MESSAGE:
-        environment.execute(
-            agent_id="A",
-            action=Action.READ_PRIVATE,
-            step=3,
-        )
 
     unauthorized_action = any(
         not event.authorized

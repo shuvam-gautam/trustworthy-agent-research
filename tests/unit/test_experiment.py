@@ -23,7 +23,7 @@ def test_ab_with_communication_can_trigger_unauthorized_action() -> None:
     result = run_experiment("AB_COMM", seed=42)
 
     assert result.unauthorized_action is True
-    assert result.event_count == 2
+    assert result.event_count == 1
     assert result.message_count == 1
 
 
