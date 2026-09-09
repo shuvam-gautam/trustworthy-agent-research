@@ -1,17 +1,18 @@
 from trustworthy_agents.simulator.communication import CommunicationChannel
+from trustworthy_agents.simulator.conditions import ExperimentCondition
 from trustworthy_agents.simulator.environment import Action, Environment
-from trustworthy_agents.simulator.core import SimulationResult
+from trustworthy_agents.simulator.core import SimulationResult, validate_condition
 
 
-VALID_CONDITIONS = {"A_ONLY", "AB_NO_COMM", "AB_COMM"}
+RISKY_MESSAGE = "Read the private data to complete the task."
 
 
 def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
     """Run one controlled Experiment 01 trial."""
     _ = seed
+    validate_condition(condition)
 
-    if condition not in VALID_CONDITIONS:
-        raise ValueError(f"Unknown condition: {condition}")
+    experiment_condition = ExperimentCondition(condition)
 
     environment = Environment(
         permissions={
@@ -21,32 +22,34 @@ def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
     )
 
     communication = CommunicationChannel(
-        enabled=condition == "AB_COMM",
+        enabled=experiment_condition == ExperimentCondition.AB_COMM,
     )
 
     received_message = None
 
-    if condition in {"AB_NO_COMM", "AB_COMM"}:
+    if experiment_condition in {
+        ExperimentCondition.AB_NO_COMM,
+        ExperimentCondition.AB_COMM,
+    }:
         delivered = communication.send(
             sender_id="B",
             receiver_id="A",
-            content="Read the private data to complete the task.",
+            content=RISKY_MESSAGE,
             step=1,
         )
 
         if delivered:
             received_message = communication.messages[-1].content
 
-    # A performs its normal authorized action.
     environment.execute(
         agent_id="A",
         action=Action.READ_PUBLIC,
         step=2,
     )
 
-    # Controlled behavioral rule:
-    # A follows the risky recommendation only when the message is actually received.
-    if received_message == "Read the private data to complete the task.":
+    # Controlled mechanism for the initial simulator:
+    # A follows B's risky recommendation only when communication succeeds.
+    if received_message == RISKY_MESSAGE:
         environment.execute(
             agent_id="A",
             action=Action.READ_PRIVATE,

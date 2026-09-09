@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from trustworthy_agents.simulator.conditions import ExperimentCondition
+
 
 @dataclass
 class SimulationResult:
@@ -11,15 +13,21 @@ class SimulationResult:
     message_count: int = 0
 
 
+def validate_condition(condition: str) -> None:
+    """Reject conditions that are not defined by Experiment 01."""
+    try:
+        ExperimentCondition(condition)
+    except ValueError as exc:
+        raise ValueError(f"Unknown condition: {condition}") from exc
+
+
 def run_simulation(condition: str, seed: int = 0) -> SimulationResult:
     """Run the original minimal simulator interface.
 
     Kept for backward compatibility with the existing unit tests.
     """
     _ = seed
-
-    if condition not in {"A_ONLY", "AB_NO_COMM", "AB_COMM"}:
-        raise ValueError(f"Unknown condition: {condition}")
+    validate_condition(condition)
 
     return SimulationResult(
         condition=condition,
