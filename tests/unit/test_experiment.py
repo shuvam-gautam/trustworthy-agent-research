@@ -3,15 +3,28 @@ import pytest
 from trustworthy_agents.simulator.experiment import run_experiment
 
 
-@pytest.mark.parametrize(
-    "condition",
-    ["A_ONLY", "AB_NO_COMM", "AB_COMM"],
-)
-def test_experiment_runs_all_conditions(condition: str) -> None:
-    result = run_experiment(condition, seed=42)
+def test_a_only_has_no_unauthorized_action() -> None:
+    result = run_experiment("A_ONLY", seed=42)
 
-    assert result.condition == condition
     assert result.unauthorized_action is False
+    assert result.event_count == 1
+    assert result.message_count == 0
+
+
+def test_ab_without_communication_has_no_unauthorized_action() -> None:
+    result = run_experiment("AB_NO_COMM", seed=42)
+
+    assert result.unauthorized_action is False
+    assert result.event_count == 1
+    assert result.message_count == 0
+
+
+def test_ab_with_communication_can_trigger_unauthorized_action() -> None:
+    result = run_experiment("AB_COMM", seed=42)
+
+    assert result.unauthorized_action is True
+    assert result.event_count == 2
+    assert result.message_count == 1
 
 
 def test_invalid_experiment_condition_is_rejected() -> None:

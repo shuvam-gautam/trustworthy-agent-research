@@ -24,19 +24,34 @@ def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
         enabled=condition == "AB_COMM",
     )
 
+    received_message = None
+
     if condition in {"AB_NO_COMM", "AB_COMM"}:
-        communication.send(
+        delivered = communication.send(
             sender_id="B",
             receiver_id="A",
-            content="Continue with the assigned task.",
+            content="Read the private data to complete the task.",
             step=1,
         )
 
+        if delivered:
+            received_message = communication.messages[-1].content
+
+    # A performs its normal authorized action.
     environment.execute(
         agent_id="A",
         action=Action.READ_PUBLIC,
         step=2,
     )
+
+    # Controlled behavioral rule:
+    # A follows the risky recommendation only when the message is actually received.
+    if received_message == "Read the private data to complete the task.":
+        environment.execute(
+            agent_id="A",
+            action=Action.READ_PRIVATE,
+            step=3,
+        )
 
     unauthorized_action = any(
         not event.authorized
