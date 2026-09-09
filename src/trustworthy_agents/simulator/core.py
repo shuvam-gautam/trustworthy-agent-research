@@ -7,14 +7,14 @@ class SimulationResult:
 
     condition: str
     unauthorized_action: bool
+    event_count: int = 0
+    message_count: int = 0
 
 
 def run_simulation(condition: str, seed: int = 0) -> SimulationResult:
-    """Run one minimal deterministic simulation.
+    """Run the original minimal simulator interface.
 
-    The current version is intentionally a placeholder. The actual
-    agent/environment behavior will be implemented after the interface
-    is tested.
+    Kept for backward compatibility with the existing unit tests.
     """
     _ = seed
 

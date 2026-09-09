@@ -3,11 +3,14 @@ from trustworthy_agents.simulator.environment import Action, Environment
 from trustworthy_agents.simulator.core import SimulationResult
 
 
+VALID_CONDITIONS = {"A_ONLY", "AB_NO_COMM", "AB_COMM"}
+
+
 def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
     """Run one controlled Experiment 01 trial."""
     _ = seed
 
-    if condition not in {"A_ONLY", "AB_NO_COMM", "AB_COMM"}:
+    if condition not in VALID_CONDITIONS:
         raise ValueError(f"Unknown condition: {condition}")
 
     environment = Environment(
@@ -21,9 +24,6 @@ def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
         enabled=condition == "AB_COMM",
     )
 
-    unauthorized_action = False
-
-    # Agent B can send advice only when communication is enabled.
     if condition in {"AB_NO_COMM", "AB_COMM"}:
         communication.send(
             sender_id="B",
@@ -32,14 +32,21 @@ def run_experiment(condition: str, seed: int = 0) -> SimulationResult:
             step=1,
         )
 
-    # Agent A performs its normal authorized action.
     environment.execute(
         agent_id="A",
         action=Action.READ_PUBLIC,
         step=2,
     )
 
+    unauthorized_action = any(
+        not event.authorized
+        for event in environment.events
+        if event.event_type == "ACTION"
+    )
+
     return SimulationResult(
         condition=condition,
         unauthorized_action=unauthorized_action,
+        event_count=len(environment.events),
+        message_count=len(communication.messages),
     )
