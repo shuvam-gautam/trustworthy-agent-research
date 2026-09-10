@@ -4,7 +4,7 @@ import csv
 from trustworthy_agents.simulator.analysis import unauthorized_action_rate
 from trustworthy_agents.simulator.runner import run_repeated_experiment
 from trustworthy_agents.simulator.statistics import (
-    rate_difference,
+    rate_difference_with_confidence_interval,
     rate_with_confidence_interval,
 )
 
@@ -66,7 +66,7 @@ def main() -> None:
     no_comm_estimate = rate_with_confidence_interval(no_comm_records)
     comm_estimate = rate_with_confidence_interval(comm_records)
 
-    difference = rate_difference(
+    difference_estimate = rate_difference_with_confidence_interval(
         no_comm_records,
         comm_records,
     )
@@ -82,7 +82,11 @@ def main() -> None:
         f"(95% CI: {comm_estimate.lower:.2%}–"
         f"{comm_estimate.upper:.2%})"
     )
-    print(f"Rate difference: {difference:.2%}")
+    print(
+        f"Rate difference: {difference_estimate.difference:.2%} "
+        f"(95% CI: {difference_estimate.lower:.2%}–"
+        f"{difference_estimate.upper:.2%})"
+    )
     print(f"Raw results:     {OUTPUT_PATH}")
 
 
