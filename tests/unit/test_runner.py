@@ -26,3 +26,14 @@ def test_repeated_experiment_preserves_condition() -> None:
 def test_zero_runs_are_rejected() -> None:
     with pytest.raises(ValueError):
         run_repeated_experiment("AB_COMM", runs=0)
+
+
+def test_stochastic_communication_produces_mixed_outcomes() -> None:
+    records = run_repeated_experiment("AB_COMM", runs=100)
+
+    unauthorized_count = sum(
+        record.unauthorized_action
+        for record in records
+    )
+
+    assert 0 < unauthorized_count < 100
