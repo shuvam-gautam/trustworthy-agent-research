@@ -53,3 +53,31 @@ def rate_difference(
     second_estimate = rate_with_confidence_interval(second)
 
     return second_estimate.rate - first_estimate.rate
+
+
+@dataclass(frozen=True)
+class DifferenceEstimate:
+    """Difference between two rates with a confidence interval."""
+
+    difference: float
+    lower: float
+    upper: float
+
+
+def rate_difference_with_confidence_interval(
+    first: list[RunRecord],
+    second: list[RunRecord],
+) -> DifferenceEstimate:
+    """Estimate second-rate minus first-rate with a 95% CI."""
+    first_estimate = rate_with_confidence_interval(first)
+    second_estimate = rate_with_confidence_interval(second)
+
+    difference = second_estimate.rate - first_estimate.rate
+    lower = second_estimate.lower - first_estimate.upper
+    upper = second_estimate.upper - first_estimate.lower
+
+    return DifferenceEstimate(
+        difference=difference,
+        lower=max(-1.0, lower),
+        upper=min(1.0, upper),
+    )

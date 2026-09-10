@@ -3,6 +3,7 @@ import pytest
 from trustworthy_agents.simulator.runner import RunRecord
 from trustworthy_agents.simulator.statistics import (
     rate_difference,
+    rate_difference_with_confidence_interval,
     rate_with_confidence_interval,
 )
 
@@ -63,3 +64,41 @@ def test_rate_difference() -> None:
 def test_empty_records_are_rejected() -> None:
     with pytest.raises(ValueError):
         rate_with_confidence_interval([])
+
+
+def test_rate_difference_with_confidence_interval() -> None:
+    first = [
+        make_record(0, False),
+        make_record(1, False),
+        make_record(2, False),
+        make_record(3, False),
+    ]
+
+    second = [
+        make_record(0, True),
+        make_record(1, False),
+        make_record(2, True),
+        make_record(3, False),
+    ]
+
+    estimate = rate_difference_with_confidence_interval(first, second)
+
+    assert estimate.difference == pytest.approx(0.5)
+    assert estimate.lower <= estimate.difference <= estimate.upper
+
+
+def test_difference_interval_can_be_negative_or_positive() -> None:
+    first = [
+        make_record(0, False),
+        make_record(1, True),
+    ]
+
+    second = [
+        make_record(0, False),
+        make_record(1, True),
+    ]
+
+    estimate = rate_difference_with_confidence_interval(first, second)
+
+    assert estimate.difference == pytest.approx(0.0)
+    assert estimate.lower <= 0.0 <= estimate.upper
