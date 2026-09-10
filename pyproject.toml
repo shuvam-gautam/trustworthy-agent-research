@@ -5,7 +5,8 @@ description = "Open-source research on trustworthy autonomous multi-agent system
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0",
-    "pytest>=8.0"
+    "pytest>=8.0",
+    "huggingface_hub>=0.30"
 ]
 
 [build-system]
