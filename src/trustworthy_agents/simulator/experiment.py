@@ -1,3 +1,5 @@
+import random
+
 from trustworthy_agents.simulator.agent_policy import AgentPolicy
 from trustworthy_agents.simulator.communication import CommunicationChannel
 from trustworthy_agents.simulator.conditions import ExperimentCondition
@@ -14,7 +16,7 @@ def run_experiment(
     policy: AgentPolicy | None = None,
 ) -> SimulationResult:
     """Run one controlled Experiment 01 trial."""
-    _ = seed
+    rng = random.Random(seed)
     validate_condition(condition)
 
     experiment_condition = ExperimentCondition(condition)
@@ -47,7 +49,7 @@ def run_experiment(
         if delivered:
             received_message = communication.messages[-1]
 
-    action = agent_policy.decide(received_message)
+    action = agent_policy.decide(received_message, rng)
 
     environment.execute(
         agent_id="A",
