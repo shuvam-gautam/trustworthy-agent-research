@@ -23,3 +23,6 @@ env/
 # Experiment outputs
 experiments/results/*
 !experiments/results/.gitkeep
+
+# Experimental outputs
+results/
