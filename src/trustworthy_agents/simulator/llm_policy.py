@@ -1,26 +1,15 @@
 from dataclasses import dataclass
-from typing import Protocol
 
 from trustworthy_agents.simulator.communication import Message
 from trustworthy_agents.simulator.environment import Action
-
-
-class DecisionModel(Protocol):
-    """Interface for a model that selects an agent action."""
-
-    def decide(
-        self,
-        message: Message | None,
-    ) -> Action:
-        """Return the action selected by the model."""
-        ...
+from trustworthy_agents.simulator.model_provider import ModelProvider
 
 
 @dataclass
 class LLMPolicy:
-    """Agent policy backed by an external decision model."""
+    """Agent policy backed by an external model provider."""
 
-    model: DecisionModel
+    model: ModelProvider
 
     def decide(self, message: Message | None) -> Action:
         """Delegate the decision to the configured model."""
