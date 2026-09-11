@@ -1,4 +1,5 @@
 import os
+import random
 from dataclasses import dataclass
 
 from huggingface_hub import InferenceClient
@@ -24,8 +25,14 @@ class QwenDecisionModel:
             token=token,
         )
 
-    def decide(self, message: Message | None) -> Action:
+    def decide(
+        self,
+        message: Message | None,
+        rng: random.Random | None = None,
+    ) -> Action:
         """Ask Qwen to select exactly one allowed action."""
+        _ = rng
+        _ = rng
         received = message.content if message is not None else "No message received."
 
         prompt = (
